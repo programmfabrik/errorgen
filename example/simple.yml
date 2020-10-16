@@ -1,0 +1,17 @@
+errors:
+  FileNotFound:
+    d: Description of the error
+    p:
+      File:
+        d: Description of the parameter
+        t: string
+    o: "The file {{ .File }} could not be found."
+
+  # GeneralError:
+  #   p:
+  #     Detail:
+  #       t: string
+  #     SuperDetail:
+  #       t: map[string]string
+  #   o: |
+  #     A general not specified error occurred: {{ .Detail }}. More {{ printf "%v" .SuperDetail }}
