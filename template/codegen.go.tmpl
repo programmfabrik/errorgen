@@ -1,0 +1,132 @@
+package {{ .D.Package }}
+
+import (
+  "fmt"
+  "bytes"
+  "text/template"
+  "strings"
+  "runtime/debug"
+  {{- range $import := $.D.Import }}
+  "{{- $import }}"
+  {{- end }}
+)
+
+// Overwrite this to include template.FuncMap into the rendering
+var {{ $.D.Prefix }}TemplateFuncs template.FuncMap
+
+type {{ $.D.Prefix }}ErrorGen interface {
+  Error() string
+	Wrap(error) {{ $.D.Prefix }}ErrorGen
+	Unwrap() error
+  Data() map[string]interface{} // Returns Data used for rendering
+  Name() string // Name of the error
+  Stack() []byte // Returns stack of the error
+}
+
+{{ range $defName, $errParams := $.D.Defaults }}
+  type {{ $.D.Prefix }}{{ $defName }} interface{
+    {{ $.D.Prefix }}ErrorGen
+    {{ range $pname, $param := $errParams }}
+      Get{{ $pname }}() {{ $param.T }}
+      Set{{ $pname }}({{ $param.T }})
+    {{ end }}
+  }
+{{ end }}
+
+{{ range $err, $def := $.D.Errors }}
+  // {{ $.D.Prefix }}{{ $err }}
+  {{ $e := printf "%s%s" $.D.Prefix $err }}
+  {{ $eS := printf "%sStruct" $e }}
+
+  type {{ $eS }} struct {
+    parent error
+    params {{ $e }}Params
+    stack []byte
+  }
+
+  type {{ $e }}Params struct {
+    {{ range $p, $defP := $def.Params }}
+      {{- $p }} {{ $defP.T }} // {{ $defP.D }}
+    {{ end }}
+  }
+
+  // {{ $e }} returns a new instance of {{ $e }} with default values
+  func {{ $e }}() {{ $eS }} {
+    e := {{ $eS }}{}
+    e.stack = debug.Stack()
+    {{ range $p, $defP := $def.Params }}
+      {{ if $defP.V }}
+        e = e.{{- $p }}({{ printf "%#v" $defP.V }})
+      {{ end }}
+    {{ end }}
+    return e
+  }
+
+  func (e {{ $eS }})Name() string {
+    return {{ printf "%#v" $err }}
+  }
+
+  func (e {{ $eS }}) templ() (*template.Template, error) {
+    return template.New("n").
+      Funcs({{ $.D.Prefix }}TemplateFuncs).
+      Parse(strings.Trim({{ printf "%#v" $def.O }}, " \n"))
+  }
+
+  func (e {{ $eS }}) Stack() []byte {
+    return e.stack
+  }
+
+  func (e {{ $eS }}) Error() string {
+    t, err := e.templ()
+    if err != nil {
+      panic(fmt.Sprintf("Error compiling template: %q", err))
+    }
+    buf := bytes.Buffer{}
+    err = t.Execute(&buf, e.Data())
+    if err != nil {
+      panic(fmt.Sprintf("Error executing template: %q", err))
+    }
+    return buf.String()
+  }
+
+  {{ range $key, $defP := $def.Params }}
+    // Get{{ $key }} returns the value of the key
+    func (e {{ $eS }}) Get{{ $key }}(){{ $defP.T }} {
+      return e.params.{{ $key }}
+    }
+    // {{ $key }} sets the value and returns a copy of the error (use for chaining)
+    func (e {{ $eS }}) {{ $key }}(v {{ $defP.T }}) {{ $eS }} {
+      e.params.{{ $key }} = v
+      return e
+    }
+    // {{ $key }} sets the value in place
+    func (e *{{ $eS }}) Set{{ $key }}(v {{ $defP.T }}) {
+      e.params.{{ $key }} = v
+    }
+  {{ end }}
+
+  // Data returns all parameters as map
+  func (e {{ $eS }})Data() map[string]interface{} {
+    data := map[string]interface{}{
+    {{ range $key, $defP := $def.Params -}}
+      {{- printf "%#v" $key }}: e.Get{{$key}}(),
+    {{ end }}
+    }
+    return data
+  }
+
+  // Wrap given error
+  func (e *{{ $eS }}) Wrap(err error) {{ $.D.Prefix }}ErrorGen {
+    if e.parent != nil {
+      panic("Unable to wrap {{$e}} with already existing parent.")
+    }
+    e.parent = err
+    return e
+  }
+
+  func (e {{ $eS }}) Unwrap() error {
+    return e.parent
+  }
+
+{{ end }}
+

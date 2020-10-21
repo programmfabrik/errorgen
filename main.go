@@ -1,6 +1,9 @@
 package main
 
+//go:generate esc -private -local-prefix-cwd -pkg=main -o=resources.go template/
+
 import (
+	"go/format"
 	"io"
 	"io/ioutil"
 	"log"
@@ -10,13 +13,12 @@ import (
 	"bytes"
 
 	"github.com/pkg/errors"
-	"github.com/programmfabrik/errors/config"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
 )
 
 func main() {
-	conf := config.Config{}
+	conf := Config{}
 	app := &cli.App{
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -27,35 +29,41 @@ func main() {
 				Destination: &conf.InputFile,
 			},
 			&cli.StringFlag{
-				Name:        "package",
-				Aliases:     []string{"p"},
-				DefaultText: "errors",
-				Usage:       "Package name for the declaration.",
-				Destination: &conf.Package,
+				Name:        "output",
+				Aliases:     []string{"o"},
+				DefaultText: "-",
+				Usage:       "Write generated code to `FILE`. Use \"-\" to output to stdout.",
+				Destination: &conf.OutputFile,
+			},
+			&cli.StringFlag{
+				Name:        "tmpl",
+				Aliases:     []string{"t"},
+				Usage:       "Use `FILE` as code template for generating.",
+				Destination: &conf.Template,
 			},
 		},
 		Name:  "errors",
 		Usage: "generate Go error definitions from .yml input",
 		Action: func(c *cli.Context) (err error) {
 
-			var r io.ReadCloser
+			var in io.ReadCloser
 
 			switch conf.InputFile {
 			case "-", "":
-				r = os.Stdin
+				in = os.Stdin
 			default:
-				r, err = os.Open(conf.InputFile)
+				in, err = os.Open(conf.InputFile)
 			}
 			if err != nil {
 				return errors.Errorf("Unable to open %q", conf.InputFile)
 			}
 
-			inputBytes, err := ioutil.ReadAll(r)
+			inputBytes, err := ioutil.ReadAll(in)
 			if err != nil {
 				return errors.Errorf("Unable to read input")
 			}
 
-			r.Close()
+			in.Close()
 
 			// parse the input as YAML
 			err = yaml.Unmarshal(inputBytes, &conf.D)
@@ -63,9 +71,27 @@ func main() {
 				return errors.Wrapf(err, "Unable to parse input")
 			}
 
-			tmpl, err := template.ParseFiles("codegen/codegen.go.tmpl")
+			err = conf.D.Validate()
 			if err != nil {
-				return errors.Wrapf(err, "Unable to parse template")
+				return err
+			}
+
+			var tmpl *template.Template
+
+			if conf.Template != "" {
+				tmpl, err = template.ParseFiles(conf.Template)
+				if err != nil {
+					return errors.Wrapf(err, "Unable to parse template")
+				}
+			} else {
+				data, err := _escFSByte(false, "/template/codegen.go.tmpl")
+				if err != nil {
+					panic(err)
+				}
+				tmpl, err = template.New("n").Parse(string(data))
+				if err != nil {
+					return errors.Wrapf(err, "Unable to parse template")
+				}
 			}
 
 			buf := bytes.Buffer{}
@@ -74,7 +100,24 @@ func main() {
 				return errors.Wrapf(err, "Unable to execute template")
 			}
 
-			io.Copy(os.Stdout, &buf)
+			codeBytes, errFormat := format.Source(buf.Bytes())
+			if errFormat != nil {
+				codeBytes = buf.Bytes()
+			}
+
+			switch conf.OutputFile {
+			case "-", "":
+				io.Copy(os.Stdout, bytes.NewReader(codeBytes))
+			default:
+				err = ioutil.WriteFile(conf.OutputFile, codeBytes, 0644)
+				if err != nil {
+					return errors.Wrapf(err, "Unable to write output file %q", conf.OutputFile)
+				}
+			}
+
+			if errFormat != nil {
+				return errors.Wrapf(err, "Unable to format Go code")
+			}
 
 			return nil
 		},

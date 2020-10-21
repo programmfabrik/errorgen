@@ -1,45 +1,3 @@
-# errors
-Go error generator with simple localization support
-
-## Usage
-
-```bash
-./errors -i simple.yml -o test.go
-```
-
-## Example .yml file
-
-```yaml
-package: main
-import:
-  - "net/url"
-defaults:
-  HTTPError:
-    Lang:
-      t: string
-    Status:
-      t: int
-    Url:
-      t: "*url.URL"
-prefix: Err
-errors:
-  FileNotFound:
-    d: Description of the error
-    p:
-      File:
-        d: Description of the parameter
-        t: string
-      Url:
-        t: "*url.URL"
-      Status:
-        v: 400
-    o: |
-      The {{ .Lang }} file "{{ .File }}" could not be found. {{ FuncTest "Test" }} Host: {{ .Url.Host }}
-```
-
-## Generated code
-
-```go
 package main
 
 import (
@@ -134,13 +92,13 @@ func (e ErrFileNotFoundStruct) GetFile() string {
 	return e.params.File
 }
 
-// File sets the value
+// File sets the value and returns a copy of the error (use for chaining)
 func (e ErrFileNotFoundStruct) File(v string) ErrFileNotFoundStruct {
 	e.params.File = v
 	return e
 }
 
-// File sets the value
+// File sets the value in place
 func (e *ErrFileNotFoundStruct) SetFile(v string) {
 	e.params.File = v
 }
@@ -150,13 +108,13 @@ func (e ErrFileNotFoundStruct) GetLang() string {
 	return e.params.Lang
 }
 
-// Lang sets the value
+// Lang sets the value and returns a copy of the error (use for chaining)
 func (e ErrFileNotFoundStruct) Lang(v string) ErrFileNotFoundStruct {
 	e.params.Lang = v
 	return e
 }
 
-// Lang sets the value
+// Lang sets the value in place
 func (e *ErrFileNotFoundStruct) SetLang(v string) {
 	e.params.Lang = v
 }
@@ -166,13 +124,13 @@ func (e ErrFileNotFoundStruct) GetStatus() int {
 	return e.params.Status
 }
 
-// Status sets the value
+// Status sets the value and returns a copy of the error (use for chaining)
 func (e ErrFileNotFoundStruct) Status(v int) ErrFileNotFoundStruct {
 	e.params.Status = v
 	return e
 }
 
-// Status sets the value
+// Status sets the value in place
 func (e *ErrFileNotFoundStruct) SetStatus(v int) {
 	e.params.Status = v
 }
@@ -182,13 +140,13 @@ func (e ErrFileNotFoundStruct) GetUrl() *url.URL {
 	return e.params.Url
 }
 
-// Url sets the value
+// Url sets the value and returns a copy of the error (use for chaining)
 func (e ErrFileNotFoundStruct) Url(v *url.URL) ErrFileNotFoundStruct {
 	e.params.Url = v
 	return e
 }
 
-// Url sets the value
+// Url sets the value in place
 func (e *ErrFileNotFoundStruct) SetUrl(v *url.URL) {
 	e.params.Url = v
 }
@@ -216,12 +174,3 @@ func (e *ErrFileNotFoundStruct) Wrap(err error) ErrErrorGen {
 func (e ErrFileNotFoundStruct) Unwrap() error {
 	return e.parent
 }
-```
-
-## Use the generated error
-
-```go
-err := ErrFileNotFound().
-  File("/tmp/henk").
-  Url(u)
-```
