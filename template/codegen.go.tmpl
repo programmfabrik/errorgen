@@ -51,12 +51,12 @@ type {{ $.D.Prefix }}ErrorGen interface {
   }
 
   // {{ $e }} returns a new instance of {{ $e }} with default values
-  func {{ $e }}() {{ $eS }} {
-    e := {{ $eS }}{}
+  func {{ $e }}() *{{ $eS }} {
+    e := &{{ $eS }}{}
     e.stack = debug.Stack()
     {{ range $p, $defP := $def.Params }}
       {{ if $defP.V }}
-        e = e.{{- $p }}({{ printf "%#v" $defP.V }})
+        e.{{- $p }}({{ printf "%#v" $defP.V }})
       {{ end }}
     {{ end }}
     return e
@@ -94,14 +94,14 @@ type {{ $.D.Prefix }}ErrorGen interface {
     func (e {{ $eS }}) Get{{ $key }}(){{ $defP.T }} {
       return e.params.{{ $key }}
     }
-    // {{ $key }} sets the value and returns a copy of the error (use for chaining)
-    func (e {{ $eS }}) {{ $key }}(v {{ $defP.T }}) {{ $eS }} {
-      e.params.{{ $key }} = v
-      return e
-    }
-    // {{ $key }} sets the value in place
+    // Set{{ $key }} set the value of the key
     func (e *{{ $eS }}) Set{{ $key }}(v {{ $defP.T }}) {
       e.params.{{ $key }} = v
+    }
+    // {{ $key }} sets the value and returns a copy of the error (use for chaining)
+    func (e *{{ $eS }}) {{ $key }}(v {{ $defP.T }}) *{{ $eS }} {
+      e.params.{{ $key }} = v
+      return e
     }
   {{ end }}
 
@@ -116,7 +116,7 @@ type {{ $.D.Prefix }}ErrorGen interface {
   }
 
   // Wrap given error
-  func (e {{ $eS }}) Wrap(err error) {{ $.D.Prefix }}ErrorGen {
+  func (e *{{ $eS }}) Wrap(err error) {{ $.D.Prefix }}ErrorGen {
     if e.parent != nil {
       panic("Unable to wrap {{$e}} with already existing parent.")
     }
@@ -124,7 +124,7 @@ type {{ $.D.Prefix }}ErrorGen interface {
     return e
   }
 
-  func (e {{ $eS }}) Unwrap() error {
+  func (e *{{ $eS }}) Unwrap() error {
     return e.parent
   }
 
