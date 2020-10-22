@@ -5,7 +5,6 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/k0kubun/pp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,7 +38,7 @@ func TestFileNotFound(t *testing.T) {
 		return
 	}
 
-	pp.Println(errHTTP.Data())
+	// pp.Println(errHTTP.Data())
 
 	if !assert.Equal(t, "slashdot.org", errHTTP.GetUrl().Host) {
 		return

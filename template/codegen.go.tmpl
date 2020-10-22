@@ -36,7 +36,7 @@ type {{ $.D.Prefix }}ErrorGen interface {
 {{ range $err, $def := $.D.Errors }}
   // {{ $.D.Prefix }}{{ $err }}
   {{ $e := printf "%s%s" $.D.Prefix $err }}
-  {{ $eS := printf "%sStruct" $e }}
+  {{ $eS := printf "%sError" $e }}
 
   type {{ $eS }} struct {
     parent error
