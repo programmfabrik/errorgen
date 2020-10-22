@@ -34,6 +34,10 @@ func TestFileNotFound(t *testing.T) {
 		return
 	}
 
+	if !assert.Equal(t, true, errors.Is(err, ErrFileNotFound())) {
+		return
+	}
+
 	if !assert.Equal(t, true, errors.Is(err, pErr)) {
 		return
 	}

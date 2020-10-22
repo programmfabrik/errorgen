@@ -210,10 +210,20 @@ func (e *ErrFileNotFoundError) Wrap(err error) *ErrFileNotFoundError {
 	return e
 }
 
+// Is return true if the passed error is the same
+func (e *ErrFileNotFoundError) Is(err error) bool {
+	e1, ok := err.(ErrErrorGen)
+	if ok {
+		return e1.ErrorCode() == e.ErrorCode()
+	}
+	return false
+}
+
 func (e *ErrFileNotFoundError) Unwrap() error {
 	return e.parent
 }
 ```
+
 ## Use the generated error
 
 ```go

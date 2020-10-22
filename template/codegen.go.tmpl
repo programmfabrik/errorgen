@@ -119,6 +119,16 @@ type {{ $.D.Prefix }}ErrorGen interface {
     return e
   }
 
+  // Is return true if the passed error is the same
+  func (e *{{ $eS }}) Is(err error) bool {
+  	e1, ok := err.({{ $.D.Prefix }}ErrorGen)
+    if ok {
+      return e1.ErrorCode() == e.ErrorCode()
+    }
+    return false
+ }
+
+
   func (e *{{ $eS }}) Unwrap() error {
     return e.parent
   }
