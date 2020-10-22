@@ -26,7 +26,7 @@ func TestFileNotFound(t *testing.T) {
 	errHTTP := e.(ErrHTTPError)
 	errHTTP.SetLang("Deutsch")
 
-	if !assert.Equal(t, `The Deutsch file "/tmp/henk" could not be found. FuncTest: Test Host: slashdot.org`, err.Error()) {
+	if !assert.Equal(t, `The Deutsch file "/tmp/henk" could not be found. FuncTest: Test Host: slashdot.org Url: http://slashdot.org`, err.Error()) {
 		return
 	}
 

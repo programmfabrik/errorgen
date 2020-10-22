@@ -212,8 +212,8 @@ var _escData = map[string]*_escFile{
 	"/template/codegen.go.tmpl": {
 		name:    "codegen.go.tmpl",
 		local:   "template/codegen.go.tmpl",
-		size:    3295,
-		modtime: 1603352861,
+		size:    3294,
+		modtime: 1603354731,
 		compressed: `
 H4sIAAAAAAAC/5xWTXPbNhM+h79iX752h8wo4N0zurROMz000VROe0hzgMiljDEFsSAoW8Phf+/sAoRI
 mVLd+mIR2I9nn/1CLfMnuUXoOhD3YuW/+j6K1K7eGwtJBBCXOxvT/83RYsO/LL7YzOKurqRFPmmsUXrr
@@ -231,9 +231,9 @@ HLy25fCpJFB4kvhclXz+vyVoVXlZak2t8qTcWbF2USQxW4V8v6tVRWYH4u7g9q+YjafOokv+puWBxItc
 /NiWJZqhiI2BJVjx8QXz1mLyw6YtF4DCLaP/hArZ1BtQeQ43bSnWzE4S0nDqnyc8Xu+gLBtm/BMex1OA
 Fhd3+LDFnvDIGjNZmlhI0ukgGiIOOXezUpw0RkH5eeSxNGjHQKQuRkMq39fHyYaFpG2Ql3r+KJVWepte
 AjxCe5jOzdfTC+YgwxIOZ3G9NQqloa5kjhNs78cdM2HzNb43oPI7btiwjIjfPYG+qnI7Cy2aBmRDD6fZ
-Frz+rnJgCjJ9t7wgdL7SLtfkh8lWm84cF+EdoOBqo2+qtcXMsJ70B2EbbTt6XcJWHVCH7T2Xg+ERCv/w
-EPUEUI8L/yiYbfT4q5abCuntTe9W6LobHPaprAzK4gj4ohpufGdIxONuD+aXBOmNOwmmr+Tz4essOvVR
-tfwdAAD//6HtXVvfDAAA
+Frz+rnJgCjJ9t7wgdL7SLtfkh8lWm84cF+EdoOBqo2+qtcXMsJ70B2EbbTt6XcJWHVCH7T1TH8MbFP7h
+HerjpxYX/k0w2+fxVy03FdLTm56t0HU3OKxTWRmUxRHwRTXc986QiMfNHswvCdIbVxJMH8nns9dZdOqj
+Yvk7AAD//yj+tpneDAAA
 `,
 	},
 

@@ -116,7 +116,7 @@ type {{ $.D.Prefix }}ErrorGen interface {
   }
 
   // Wrap given error
-  func (e *{{ $eS }}) Wrap(err error) {{ $.D.Prefix }}ErrorGen {
+  func (e {{ $eS }}) Wrap(err error) {{ $.D.Prefix }}ErrorGen {
     if e.parent != nil {
       panic("Unable to wrap {{$e}} with already existing parent.")
     }

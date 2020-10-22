@@ -22,4 +22,4 @@ errors:
       Status:
         v: 400
     o: |
-      The {{ .Lang }} file "{{ .File }}" could not be found. {{ FuncTest "Test" }} Host: {{ .Url.Host }}
+      The {{ .Lang }} file "{{ .File }}" could not be found. {{ FuncTest "Test" }} Host: {{ .Url.Host }} Url: {{ .Url }}

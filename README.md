@@ -109,7 +109,7 @@ func (e ErrFileNotFoundError) ErrorCode() string {
 func (e ErrFileNotFoundError) templ() (*template.Template, error) {
 	return template.New("n").
 		Funcs(ErrTemplateFuncs).
-		Parse(strings.Trim("The {{ .Lang }} file \"{{ .File }}\" could not be found. {{ FuncTest \"Test\" }} Host: {{ .Url.Host }}\n", " \n"))
+		Parse(strings.Trim("The {{ .Lang }} file \"{{ .File }}\" could not be found. {{ FuncTest \"Test\" }} Host: {{ .Url.Host }} Url: {{ .Url }}\n", " \n"))
 }
 
 func (e ErrFileNotFoundError) Stack() []byte {
@@ -205,7 +205,7 @@ func (e ErrFileNotFoundError) Data() map[string]interface{} {
 }
 
 // Wrap given error
-func (e *ErrFileNotFoundError) Wrap(err error) ErrErrorGen {
+func (e ErrFileNotFoundError) Wrap(err error) ErrErrorGen {
 	if e.parent != nil {
 		panic("Unable to wrap ErrFileNotFound with already existing parent.")
 	}
