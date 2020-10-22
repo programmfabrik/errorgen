@@ -16,14 +16,14 @@ var {{ $.D.Prefix }}TemplateFuncs template.FuncMap
 
 type {{ $.D.Prefix }}ErrorGen interface {
   Error() string
-	Wrap(error) {{ $.D.Prefix }}ErrorGen
 	Unwrap() error
-  Data() map[string]interface{} // Returns Data used for rendering
+  Params() interface{} // Returns params used for rendering
   ErrorCode() string // Name / code of the error
   Stack() []byte // Returns stack of the error
 }
 
 {{ range $defName, $errParams := $.D.Defaults }}
+  // {{ $.D.Prefix }}{{ $defName }}
   type {{ $.D.Prefix }}{{ $defName }} interface{
     {{ $.D.Prefix }}ErrorGen
     {{ range $pname, $param := $errParams }}
@@ -46,7 +46,7 @@ type {{ $.D.Prefix }}ErrorGen interface {
 
   type {{ $e }}Params struct {
     {{ range $p, $defP := $def.Params }}
-      {{- $p }} {{ $defP.T }} // {{ $defP.D }}
+      {{- $p }} {{ $defP.T }} `{{ $defP.A }}` // {{ $defP.D }}
     {{ end }}
   }
 
@@ -82,7 +82,7 @@ type {{ $.D.Prefix }}ErrorGen interface {
       panic(fmt.Sprintf("Error compiling template: %q", err))
     }
     buf := bytes.Buffer{}
-    err = t.Execute(&buf, e.Data())
+    err = t.Execute(&buf, e.Params())
     if err != nil {
       panic(fmt.Sprintf("Error executing template: %q", err))
     }
@@ -105,18 +105,13 @@ type {{ $.D.Prefix }}ErrorGen interface {
     }
   {{ end }}
 
-  // Data returns all parameters as map
-  func (e {{ $eS }})Data() map[string]interface{} {
-    data := map[string]interface{}{
-    {{ range $key, $defP := $def.Params -}}
-      {{- printf "%#v" $key }}: e.Get{{$key}}(),
-    {{ end }}
-    }
-    return data
+  // Params returns all parameters as map
+  func (e {{ $eS }})Params() interface{} {
+    return e.params
   }
 
   // Wrap given error
-  func (e *{{ $eS }}) Wrap(err error) {{ $.D.Prefix }}ErrorGen {
+  func (e *{{ $eS }}) Wrap(err error) *{{ $eS }} {
     if e.parent != nil {
       panic("Unable to wrap {{$e}} with already existing parent.")
     }

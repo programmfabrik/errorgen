@@ -19,6 +19,8 @@ defaults:
       t: string
     Status:
       t: int
+      a: |
+        json:"s"
     Url:
       t: "*url.URL"
 prefix: Err
@@ -34,7 +36,7 @@ errors:
       Status:
         v: 400
     o: |
-      The {{ .Lang }} file "{{ .File }}" could not be found. {{ FuncTest "Test" }} Host: {{ .Url.Host }}
+      The {{ .Lang }} file "{{ .File }}" could not be found. {{ FuncTest "Test" }} Host: {{ .Url.Host }} Url: {{ .Url }}
 ```
 
 ## Generated code
@@ -56,13 +58,13 @@ var ErrTemplateFuncs template.FuncMap
 
 type ErrErrorGen interface {
 	Error() string
-	Wrap(error) ErrErrorGen
 	Unwrap() error
-	Data() map[string]interface{} // Returns Data used for rendering
-	ErrorCode() string            // Name / code of the error
-	Stack() []byte                // Returns stack of the error
+	Params() interface{} // Returns params used for rendering
+	ErrorCode() string   // Name / code of the error
+	Stack() []byte       // Returns stack of the error
 }
 
+// ErrHTTPError
 type ErrHTTPError interface {
 	ErrErrorGen
 
@@ -85,19 +87,20 @@ type ErrFileNotFoundError struct {
 }
 
 type ErrFileNotFoundParams struct {
-	File   string   // Description of the parameter
-	Lang   string   //
-	Status int      //
-	Url    *url.URL //
+	File   string `json:"file"` // Description of the parameter
+	Lang   string `json:"lang"` // Lang
+	Status int    `json:"s"
+` // Status
+	Url *url.URL `json:"url"` // Url
 
 }
 
 // ErrFileNotFound returns a new instance of ErrFileNotFound with default values
-func ErrFileNotFound() ErrFileNotFoundError {
-	e := ErrFileNotFoundError{}
+func ErrFileNotFound() *ErrFileNotFoundError {
+	e := &ErrFileNotFoundError{}
 	e.stack = debug.Stack()
 
-	e = e.Status(400)
+	e.Status(400)
 
 	return e
 }
@@ -122,7 +125,7 @@ func (e ErrFileNotFoundError) Error() string {
 		panic(fmt.Sprintf("Error compiling template: %q", err))
 	}
 	buf := bytes.Buffer{}
-	err = t.Execute(&buf, e.Data())
+	err = t.Execute(&buf, e.Params())
 	if err != nil {
 		panic(fmt.Sprintf("Error executing template: %q", err))
 	}
@@ -134,15 +137,15 @@ func (e ErrFileNotFoundError) GetFile() string {
 	return e.params.File
 }
 
-// File sets the value and returns a copy of the error (use for chaining)
-func (e ErrFileNotFoundError) File(v string) ErrFileNotFoundError {
-	e.params.File = v
-	return e
-}
-
-// File sets the value in place
+// SetFile set the value of the key
 func (e *ErrFileNotFoundError) SetFile(v string) {
 	e.params.File = v
+}
+
+// File sets the value and returns a copy of the error (use for chaining)
+func (e *ErrFileNotFoundError) File(v string) *ErrFileNotFoundError {
+	e.params.File = v
+	return e
 }
 
 // GetLang returns the value of the key
@@ -150,15 +153,15 @@ func (e ErrFileNotFoundError) GetLang() string {
 	return e.params.Lang
 }
 
-// Lang sets the value and returns a copy of the error (use for chaining)
-func (e ErrFileNotFoundError) Lang(v string) ErrFileNotFoundError {
-	e.params.Lang = v
-	return e
-}
-
-// Lang sets the value in place
+// SetLang set the value of the key
 func (e *ErrFileNotFoundError) SetLang(v string) {
 	e.params.Lang = v
+}
+
+// Lang sets the value and returns a copy of the error (use for chaining)
+func (e *ErrFileNotFoundError) Lang(v string) *ErrFileNotFoundError {
+	e.params.Lang = v
+	return e
 }
 
 // GetStatus returns the value of the key
@@ -166,15 +169,15 @@ func (e ErrFileNotFoundError) GetStatus() int {
 	return e.params.Status
 }
 
-// Status sets the value and returns a copy of the error (use for chaining)
-func (e ErrFileNotFoundError) Status(v int) ErrFileNotFoundError {
-	e.params.Status = v
-	return e
-}
-
-// Status sets the value in place
+// SetStatus set the value of the key
 func (e *ErrFileNotFoundError) SetStatus(v int) {
 	e.params.Status = v
+}
+
+// Status sets the value and returns a copy of the error (use for chaining)
+func (e *ErrFileNotFoundError) Status(v int) *ErrFileNotFoundError {
+	e.params.Status = v
+	return e
 }
 
 // GetUrl returns the value of the key
@@ -182,30 +185,24 @@ func (e ErrFileNotFoundError) GetUrl() *url.URL {
 	return e.params.Url
 }
 
-// Url sets the value and returns a copy of the error (use for chaining)
-func (e ErrFileNotFoundError) Url(v *url.URL) ErrFileNotFoundError {
-	e.params.Url = v
-	return e
-}
-
-// Url sets the value in place
+// SetUrl set the value of the key
 func (e *ErrFileNotFoundError) SetUrl(v *url.URL) {
 	e.params.Url = v
 }
 
-// Data returns all parameters as map
-func (e ErrFileNotFoundError) Data() map[string]interface{} {
-	data := map[string]interface{}{
-		"File":   e.GetFile(),
-		"Lang":   e.GetLang(),
-		"Status": e.GetStatus(),
-		"Url":    e.GetUrl(),
-	}
-	return data
+// Url sets the value and returns a copy of the error (use for chaining)
+func (e *ErrFileNotFoundError) Url(v *url.URL) *ErrFileNotFoundError {
+	e.params.Url = v
+	return e
+}
+
+// Params returns all parameters as map
+func (e ErrFileNotFoundError) Params() interface{} {
+	return e.params
 }
 
 // Wrap given error
-func (e ErrFileNotFoundError) Wrap(err error) ErrErrorGen {
+func (e *ErrFileNotFoundError) Wrap(err error) *ErrFileNotFoundError {
 	if e.parent != nil {
 		panic("Unable to wrap ErrFileNotFound with already existing parent.")
 	}
@@ -213,11 +210,10 @@ func (e ErrFileNotFoundError) Wrap(err error) ErrErrorGen {
 	return e
 }
 
-func (e ErrFileNotFoundError) Unwrap() error {
+func (e *ErrFileNotFoundError) Unwrap() error {
 	return e.parent
 }
 ```
-
 ## Use the generated error
 
 ```go

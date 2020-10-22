@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type Declaration struct {
@@ -26,6 +27,7 @@ type ErrorParams map[string]ErrorParam
 
 type ErrorParam struct {
 	T string      // Go (T)ype of the param
+	A string      // Type annotation
 	D string      // (D)escription of the param
 	V interface{} // Default (V)alue of the param
 }
@@ -44,6 +46,10 @@ func (eps *ErrorParams) merge(key string, ep ErrorParam) error {
 		} else if ep1.T != ep.T {
 			return errors.New(fmt.Sprintf("Param %q has conflicting type %q. Default type: %q", key, ep.T, ep1.T))
 		}
+	}
+
+	if ep.A != "" {
+		ep1.A = ep.A
 	}
 
 	if ep.D != "" {
@@ -80,7 +86,7 @@ func mergeParams(defs map[string]ErrorParams, ep1 ErrorParams) (ep ErrorParams, 
 type reservedNames []string
 
 func isReserved(name string) bool {
-	for _, n := range []string{"Error", "Wrap", "Unwrap", "Data", "ErrorCode", "Stack"} {
+	for _, n := range []string{"Error", "Wrap", "Unwrap", "Params", "ErrorCode", "Stack"} {
 		if n == name {
 			return true
 		}
@@ -114,7 +120,20 @@ func (d *Declaration) Validate() (err error) {
 		if err != nil {
 			return err
 		}
+
+		for pname, pDef := range errDef.Params {
+			if pDef.A == "" {
+				pDef.A = `json:"` + strings.ToLower(pname) + `"`
+			}
+			if pDef.D == "" {
+				pDef.D = pname
+			}
+			errDef.Params[pname] = pDef
+
+		}
+
 		d.Errors[ename] = errDef
 	}
+
 	return nil
 }
