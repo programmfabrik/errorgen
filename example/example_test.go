@@ -34,7 +34,7 @@ func TestFileNotFound(t *testing.T) {
 		return
 	}
 
-	if !assert.Equal(t, "FileNotFound", errHTTP.Name()) {
+	if !assert.Equal(t, "FileNotFound", errHTTP.ErrorCode()) {
 		return
 	}
 

@@ -80,7 +80,7 @@ func mergeParams(defs map[string]ErrorParams, ep1 ErrorParams) (ep ErrorParams, 
 type reservedNames []string
 
 func isReserved(name string) bool {
-	for _, n := range []string{"Error", "Wrap", "Unwrap", "Data", "Name", "Stack"} {
+	for _, n := range []string{"Error", "Wrap", "Unwrap", "Data", "ErrorCode", "Stack"} {
 		if n == name {
 			return true
 		}
