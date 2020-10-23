@@ -5,7 +5,20 @@ type Config struct {
 	InputFile  string
 	OutputFile string
 
-	Template string
+	Template string // Template file for rendering
+	HTML     bool   // True, if rendering should use template/html instead of template/text for rendering
+	Server   int    // Start server on port
 
 	D Declaration // Read and parsed from InputFile
+}
+
+func (c *Config) Validate() error {
+	err := c.D.Validate()
+	if err != nil {
+		return err
+	}
+	if c.Server > 0 {
+		c.HTML = true
+	}
+	return nil
 }

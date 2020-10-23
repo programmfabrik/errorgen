@@ -1,0 +1,54 @@
+<html>
+<head>
+  <style>
+    body {
+      font-family: arial;
+    }
+    table td {
+      border: 1px solid black;
+      padding: 5px;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    .pname {
+      font-weight: bold;
+    }
+    a:visited, a {
+      color:black;
+    }
+  </style>
+</head>
+<body>
+<h1>Errors</h1>
+{{ range $eName, $eDef := .D.Errors }}
+  <h2><a id="{{ $eName }}" href="#{{ $eName }}">{{ $eName }}</a></h2>
+  <p>{{ $eDef.D }}</p>
+  <h3>Template</h3>
+  <p><pre>{{ $eDef.O }}</pre></p>
+  <h3>Parameters</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Param</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Annotation</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{ range $pName, $pDef := $eDef.Params }}
+        <tr>
+          <td class="pname">{{ $pName }}</td>
+          <td>{{ $pDef.T }}</td>
+          <td>{{ $pDef.D }}</td>
+          <td>{{ $pDef.A }}</td>
+          <td>{{ $pDef.V }}</td>
+        </tr>
+      {{ end }}
+    </tbody>
+  </table>
+{{ end }}
+</body>
+</html>
