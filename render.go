@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	htemplate "html/template"
@@ -24,8 +25,16 @@ func runGen(c *cli.Context, conf Config) (err error) {
 	switch conf.InputFile {
 	case "-", "":
 		in = os.Stdin
+		conf.inputDebug = "<stdin>"
 	default:
 		in, err = os.Open(conf.InputFile)
+
+		execFile, err := os.Executable()
+		if err != nil {
+			return errors.Wrap(err, "Unable to get path of executable")
+		}
+
+		conf.inputDebug = filepath.Join(filepath.Dir(execFile), conf.InputFile)
 	}
 	if err != nil {
 		return errors.Errorf("Unable to open %q", conf.InputFile)
@@ -133,7 +142,7 @@ func render(conf Config) (parsedBytes []byte, err error) {
 		if err != nil {
 			return nil, errors.Wrapf(err, "Unable to parse template")
 		}
-		out = fmt.Sprintf("Rendered text/template %q", conf.Template)
+		out = fmt.Sprintf("text/template %q", conf.Template)
 	} else {
 		data, err := _escFSByte(false, "/templates/codegen.go.tmpl")
 		if err != nil {
@@ -143,7 +152,7 @@ func render(conf Config) (parsedBytes []byte, err error) {
 		if err != nil {
 			return nil, errors.Wrapf(err, "Unable to parse template")
 		}
-		out = fmt.Sprintf("Rendered text/template built-in")
+		out = fmt.Sprintf("text/template built-in")
 	}
 
 	err = tmpl.Execute(&buf, conf)
@@ -153,7 +162,11 @@ func render(conf Config) (parsedBytes []byte, err error) {
 
 	codeBytes, err := format.Source(buf.Bytes())
 
-	fmt.Fprintf(os.Stderr, "%s: %d bytes. Error: %v\n", out, len(codeBytes), err)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[errorgen] %s: %s: %d bytes. Error: %v\n", conf.inputDebug, out, len(codeBytes), err)
+	} else {
+		fmt.Fprintf(os.Stderr, "[errorgen] %s: %s: %d bytes.\n", conf.inputDebug, out, len(codeBytes))
+	}
 
 	if err != nil {
 		return codeBytes, errors.Wrapf(err, "Unable to format Go code")

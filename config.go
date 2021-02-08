@@ -10,6 +10,8 @@ type Config struct {
 	Server   int    // Start server on port
 
 	D Declaration // Read and parsed from InputFile
+
+	inputDebug string // set to stdin or filename for debug output
 }
 
 func (c *Config) Validate() error {
