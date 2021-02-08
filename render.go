@@ -27,14 +27,14 @@ func runGen(c *cli.Context, conf Config) (err error) {
 		in = os.Stdin
 		conf.inputDebug = "<stdin>"
 	default:
-		in, err = os.Open(conf.InputFile)
 
-		execFile, err := os.Executable()
+		wDir, err := os.Getwd()
 		if err != nil {
-			return errors.Wrap(err, "Unable to get path of executable")
+			return errors.Wrap(err, "Unable to get workdir")
 		}
 
-		conf.inputDebug = filepath.Join(filepath.Dir(execFile), conf.InputFile)
+		in, err = os.Open(conf.InputFile)
+		conf.inputDebug = filepath.Join(wDir, conf.InputFile)
 	}
 	if err != nil {
 		return errors.Errorf("Unable to open %q", conf.InputFile)
