@@ -74,5 +74,26 @@ func TestFileNotFound(t *testing.T) {
 	}
 
 	// println(string(errHTTP.Stack()))
+}
+
+func TestUnwrap(t *testing.T) {
+	ErrTemplateFuncs = nil
+
+	err1 := errors.New("henk error")
+	err2 := ErrWrapTest().Wrap(err1)
+
+	if !assert.Equal(t, `Simple wrap test henk error`, err2.Error()) {
+		return
+	}
+
+	ErrTemplateFuncs = template.FuncMap{
+		"FuncTest": func(s string) string {
+			return "FuncTest: " + s
+		},
+	}
+
+	if !assert.Equal(t, `Simple wrap test henk error`, err2.Error()) {
+		return
+	}
 
 }
