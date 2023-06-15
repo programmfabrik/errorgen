@@ -1,0 +1,6 @@
+key	params	output
+main.FileNotFound	File, Lang, Status, Url	"The {{ .Lang }} file ""{{ .File }}"" could not be found. {{ FuncTest ""Test"" }} Host: {{ .Url.Host }} Url: {{ .Url }}
+"
+main.WrapTest	Lang, Status, Url	Simple wrap test {{ Unwrap }}
+main.FileNotFound	File, Lang, Status, Url	"The {{ .Lang }} file ""{{ .File }}"" could not be found. {{ FuncTest ""Test"" }} Host: {{ .Url.Host }} Url: {{ .Url }}"
+main.WrapTest	Lang, Status, Url	Simple wrap test {{ Unwrap }}

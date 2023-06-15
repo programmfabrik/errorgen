@@ -18,6 +18,7 @@ type {{ $.D.Prefix }}ErrorGen interface {
   Error() string
 	Unwrap() error
   Params() interface{} // Returns params used for rendering
+  Package() string // Package name
   ErrorCode() string // Name / code of the error
   Stack() []byte // Returns stack of the error
 }
@@ -47,7 +48,7 @@ type {{ $.D.Prefix }}ErrorGen interface {
 
   type {{ $eP }} struct {
     {{ range $p, $defP := $def.Params }}
-      {{- $p }} {{ $defP.T }} `{{ $defP.A }}` // {{ $defP.D }}
+      {{- $p }} {{ $defP.T }} `json:"{{ lower $p }}"` // {{ $defP.D }}
     {{ end }}
   }
 
@@ -65,6 +66,10 @@ type {{ $.D.Prefix }}ErrorGen interface {
 
   func (e {{ $eS }})ErrorCode() string {
     return {{ printf "%#v" $err }}
+  }
+
+  func (e {{ $eS }})Package() string {
+    return {{ printf "%q" $.D.Package }}
   }
 
   func (e {{ $eS }}) templ() (*template.Template, error) {

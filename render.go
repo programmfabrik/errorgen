@@ -14,10 +14,19 @@ import (
 	htemplate "html/template"
 	ttemplate "text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
+
+	_ "embed"
 )
+
+//go:embed templates/doc.html.tmpl
+var docTmpl string
+
+//go:embed templates/codegen.go.tmpl
+var codeTmpl string
 
 func runGen(c *cli.Context, conf Config) (err error) {
 	var in io.ReadCloser
@@ -90,9 +99,12 @@ func runGen(c *cli.Context, conf Config) (err error) {
 			}
 		}
 	}
-
 	if err != nil {
 		return err
+	}
+
+	if conf.CsvFile != "" {
+		conf.D.writeCSV(conf.CsvFile)
 	}
 
 	return nil
@@ -105,20 +117,15 @@ func render(conf Config) (parsedBytes []byte, err error) {
 
 	if conf.HTML {
 		// Render html/template
-		var tmpl *htemplate.Template
-
+		tmpl := htemplate.New("n").Funcs(sprig.HtmlFuncMap())
 		if conf.Template != "" {
-			tmpl, err = htemplate.ParseFiles(conf.Template)
+			tmpl, err = tmpl.ParseFiles(conf.Template)
 			if err != nil {
 				return nil, errors.Wrap(err, "Unable to parse template")
 			}
 			out = fmt.Sprintf("Rendered html/template %q", conf.Template)
 		} else {
-			data, err := _escFSByte(false, "/templates/doc.html.tmpl")
-			if err != nil {
-				return nil, err
-			}
-			tmpl, err = htemplate.New("n").Parse(string(data))
+			tmpl, err = tmpl.Parse(docTmpl)
 			if err != nil {
 				return nil, errors.Wrap(err, "Unable to parse template")
 			}
@@ -135,26 +142,20 @@ func render(conf Config) (parsedBytes []byte, err error) {
 
 	// Render text/template
 
-	var tmpl *ttemplate.Template
-
+	tmpl := ttemplate.New("n").Funcs(sprig.TxtFuncMap())
 	if conf.Template != "" {
-		tmpl, err = ttemplate.ParseFiles(conf.Template)
+		tmpl, err = tmpl.ParseFiles(conf.Template)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Unable to parse template")
 		}
 		out = fmt.Sprintf("text/template %q", conf.Template)
 	} else {
-		data, err := _escFSByte(false, "/templates/codegen.go.tmpl")
-		if err != nil {
-			return nil, err
-		}
-		tmpl, err = ttemplate.New("n").Parse(string(data))
+		tmpl, err = tmpl.Parse(codeTmpl)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Unable to parse template")
 		}
 		out = fmt.Sprintf("text/template built-in")
 	}
-
 	err = tmpl.Execute(&buf, conf)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Unable to execute template")

@@ -7,8 +7,6 @@ defaults:
       t: string
     Status:
       t: int
-      a: |
-        json:"s"
     Url:
       t: "*url.URL"
 prefix: Err

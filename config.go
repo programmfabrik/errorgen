@@ -6,6 +6,7 @@ type Config struct {
 	OutputFile string
 
 	Template string // Template file for rendering
+	CsvFile  string // Append to CSV file
 	HTML     bool   // True, if rendering should use template/html instead of template/text for rendering
 	Server   int    // Start server on port
 

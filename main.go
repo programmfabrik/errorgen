@@ -1,7 +1,5 @@
 package main
 
-//go:generate esc -private -local-prefix-cwd -pkg=main -o=resources.go templates/
-
 import (
 	"log"
 	"os"
@@ -17,30 +15,36 @@ func main() {
 				Name:        "input",
 				Aliases:     []string{"i"},
 				DefaultText: "-",
-				Usage:       "Load .yml input from `FILE`. Use \"-\" to read from stdin.",
+				Usage:       "Load .yml input from `FILE`. Use \"-\" to read from stdin",
 				Destination: &conf.InputFile,
 			},
 			&cli.StringFlag{
 				Name:        "output",
 				Aliases:     []string{"o"},
 				DefaultText: "-",
-				Usage:       "Write generated code to `FILE`. Use \"-\" to output to stdout.",
+				Usage:       "Write generated code to `FILE`. Use \"-\" to output to stdout",
 				Destination: &conf.OutputFile,
 			},
 			&cli.StringFlag{
 				Name:        "tmpl",
 				Aliases:     []string{"t"},
-				Usage:       "Use `FILE` as code template for generating.",
+				Usage:       "Use `FILE` as code template for generating",
 				Destination: &conf.Template,
+			},
+			&cli.StringFlag{
+				Name:        "csv",
+				Aliases:     []string{"c"},
+				Usage:       "Append to `FILE` in CSV format: key, parameters, output",
+				Destination: &conf.CsvFile,
 			},
 			&cli.BoolFlag{
 				Name:        "html",
-				Usage:       "Use html/template instead of text/template for rendering.",
+				Usage:       "Use html/template instead of text/template for rendering",
 				Destination: &conf.HTML,
 			},
 			&cli.IntFlag{
 				Name:        "server",
-				Usage:       "Start webserver on port to show html, implies --html.",
+				Usage:       "Start webserver on port to show html, implies --html",
 				Destination: &conf.Server,
 			},
 		},

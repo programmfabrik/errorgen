@@ -69,7 +69,7 @@ func TestFileNotFound(t *testing.T) {
 	}
 
 	json, _ := json.Marshal(errHTTP.Params())
-	if !assert.Equal(t, `{"file":"/tmp/henk","lang":"Deutsch","s":400,"url":{"Scheme":"http","Opaque":"","User":null,"Host":"slashdot.org","Path":"","RawPath":"","ForceQuery":false,"RawQuery":"","Fragment":"","RawFragment":""}}`, string(json)) {
+	if !assert.Equal(t, `{"file":"/tmp/henk","lang":"Deutsch","status":400,"url":{"Scheme":"http","Opaque":"","User":null,"Host":"slashdot.org","Path":"","RawPath":"","OmitHost":false,"ForceQuery":false,"RawQuery":"","Fragment":"","RawFragment":""}}`, string(json)) {
 		return
 	}
 
