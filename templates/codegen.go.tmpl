@@ -5,7 +5,6 @@ import (
   "bytes"
   "text/template"
   "strings"
-  "runtime/debug"
   {{- range $import := $.D.Import }}
   "{{- $import }}"
   {{- end }}
@@ -20,7 +19,6 @@ type {{ $.D.Prefix }}ErrorGen interface {
   Params() interface{} // Returns params used for rendering
   Package() string // Package name
   ErrorCode() string // Name / code of the error
-  Stack() []byte // Returns stack of the error
 }
 
 {{ range $defName, $errParams := $.D.Defaults }}
@@ -43,7 +41,6 @@ type {{ $.D.Prefix }}ErrorGen interface {
   type {{ $eS }} struct {
     parent error
     params {{ $e }}Params
-    stack []byte
   }
 
   type {{ $eP }} struct {
@@ -55,7 +52,6 @@ type {{ $.D.Prefix }}ErrorGen interface {
   // {{ $e }} returns a new instance of {{ $e }} with default values
   func {{ $e }}() *{{ $eS }} {
     e := &{{ $eS }}{}
-    e.stack = debug.Stack()
     {{ range $p, $defP := $def.Params }}
       {{ if $defP.V }}
         e.{{- $p }}({{ printf "%#v" $defP.V }})
@@ -83,10 +79,6 @@ type {{ $.D.Prefix }}ErrorGen interface {
     return template.New("n").
       Funcs(tf).
       Parse(strings.Trim({{ printf "%#v" $def.O }}, " \n"))
-  }
-
-  func (e {{ $eS }}) Stack() []byte {
-    return e.stack
   }
 
   func (e {{ $eS }}) Error() string {
